@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Misteri Balai Aksara: Ujian Sasterawan Diraja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+        :root {
+            --color-wood-dark: #2c1e16;
+            --color-wood-light: #4a3728;
+            --color-gold: #d4af37;
+            --color-parchment: #f4e4bc;
+            --color-danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background-color: #1a1a1a;
+            color: var(--color-parchment);
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            touch-action: none; 
+        }
+
+        .font-title { font-family: 'Cinzel', serif; }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0f0f0f;
+        }
+
+        canvas {
+            background: linear-gradient(to bottom, #2b1b17, #1a110f);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+            image-rendering: pixelated;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .bg-parchment {
+            background-color: var(--color-parchment);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.05"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+            color: var(--color-wood-dark);
+        }
+
+        #flash-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: red;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 50;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        /* 主页按钮流光动画 */
+        @keyframes shine {
+            100% { transform: translateX(100%); }
+        }
+        .btn-shine:hover .shine-effect {
+            animation: shine 1s ease-in-out forwards;
+        }
+
+        /* 成功提示 Toast 动画 */
+        @keyframes slideDownFader {
+            0% { transform: translate(-50%, -100%); opacity: 0; }
+            10% { transform: translate(-50%, 20px); opacity: 1; }
+            90% { transform: translate(-50%, 20px); opacity: 1; }
+            100% { transform: translate(-50%, -100%); opacity: 0; }
+        }
+        .toast-success-anim {
+            animation: slideDownFader 3s ease-in-out forwards;
+        }
+
+        .mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 30;
+            pointer-events: none;
+        }
+        .btn-control {
+            pointer-events: auto;
+            background: rgba(44, 30, 22, 0.7);
+            border: 2px solid var(--color-gold);
+            color: var(--color-gold);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            user-select: none;
+            backdrop-filter: blur(4px);
+        }
+        .btn-control:active { background: rgba(212, 175, 55, 0.5); color: #fff; }
+        
+        @media (min-width: 768px) {
+            .mobile-controls { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 主页 (Main Menu) -->
+    <div id="main-menu" class="fixed inset-0 z-[100] flex flex-col justify-center items-center bg-[#1a110f] text-[#d4af37]">
+        <div class="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none" style="background-image: radial-gradient(circle at center, #4a3728 0%, #1a110f 100%);"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' opacity=\'0.05\'><filter id=\'noise\'><feTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23noise)\'/></svg>')] pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col items-center text-center px-4">
+            <h2 class="font-title text-xl md:text-2xl text-[#f4e4bc] mb-2 tracking-widest">MISTERI BALAI AKSARA</h2>
+            <h1 class="font-title text-4xl md:text-7xl font-bold mb-6 drop-shadow-[0_0_20px_rgba(212,175,55,0.8)]">UJIAN SASTERAWAN<br>DIRAJA</h1>
+            
+            <p class="text-sm md:text-lg text-gray-300 max-w-2xl mb-12 italic">
+                Satu permainan interaktif untuk menguji kemahiran tatabahasa dan penulisan Bahasa Melayu.
+            </p>
+
+            <button onclick="showIntro()" class="btn-shine relative px-10 py-4 bg-[#5c3a21] hover:bg-[#8b5a2b] text-[#f4e4bc] font-bold text-xl md:text-2xl rounded-sm border-2 border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all transform hover:scale-105 overflow-hidden">
+                <span class="relative z-10">MASUK KE BALAI AKSARA</span>
+                <div class="shine-effect absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full"></div>
+            </button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <!-- 游戏画布 -->
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="flash-overlay"></div>
+
+        <!-- 通关成功 Toast 提示 -->
+        <div id="toast-success" class="fixed top-0 left-1/2 -translate-x-1/2 bg-[#10b981] text-white px-8 py-3 rounded-b-lg font-bold text-lg shadow-[0_0_20px_rgba(16,185,129,0.5)] z-[60] opacity-0 pointer-events-none flex items-center gap-3">
+            <span class="text-2xl">🗝️</span> Tahniah! Anda berjaya mendapat Kunci!
+        </div>
+
+        <!-- 获得道具 Toast 提示 -->
+        <div id="toast-item" class="fixed top-20 left-1/2 -translate-x-1/2 bg-[#d4af37] text-black px-8 py-3 rounded-lg font-bold text-lg shadow-[0_0_20px_rgba(212,175,55,0.5)] z-[60] opacity-0 pointer-events-none flex items-center gap-3">
+            <span id="toast-item-icon" class="text-2xl">🎁</span> <span id="toast-item-text">Item Baru!</span>
+        </div>
+
+        <!-- 顶部状态栏 -->
+        <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-10 pointer-events-none max-w-[800px] mx-auto">
+            <div class="bg-black/70 border border-[#d4af37] px-4 py-2 rounded">
+                <div class="flex items-center gap-4">
+                    <h1 class="font-title text-[#d4af37] text-lg sm:text-xl" id="level-display">Tahap 1</h1>
+                    <div id="lives-display" class="text-red-500 text-sm sm:text-base tracking-widest drop-shadow-md">❤️❤️❤️❤️❤️</div>
+                </div>
+                <div class="flex gap-2 mt-1" id="inventory-display">
+                    <span class="text-gray-600 grayscale" id="inv-a">📜A</span>
+                    <span class="text-gray-600 grayscale" id="inv-b">📜B</span>
+                    <span class="text-gray-600 grayscale" id="inv-c">📜C</span>
+                </div>
+                <!-- 道具显示 -->
+                <div class="flex gap-2 mt-1 text-xs text-yellow-200" id="powerup-display">
+                    <span id="power-gun" class="hidden">🔫 Pistol (F / S)</span>
+                    <span id="power-wing" class="hidden">🪽 Terbang (▲)</span>
+                </div>
+            </div>
+            <div id="timer-container" class="bg-black/70 border border-[#d4af37] px-4 py-2 rounded flex items-center gap-2">
+                <span class="text-xl">⏳</span>
+                <span id="timer-display" class="text-2xl font-bold font-mono text-yellow-100">05:00</span>
+            </div>
+        </div>
+
+        <!-- 手机端虚拟按键 -->
+        <div class="mobile-controls max-w-[800px] mx-auto">
+            <div class="flex gap-2">
+                <button class="btn-control" id="btn-left">◀</button>
+                <button class="btn-control" id="btn-right">▶</button>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn-control hidden bg-red-900/70 border-red-500" id="btn-shoot">S</button>
+                <button class="btn-control" id="btn-action">E</button>
+                <button class="btn-control" id="btn-jump">▲</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 模态框区域 ==================== -->
+    <div id="modal-intro" class="fixed inset-0 bg-black/90 z-50 hidden justify-center items-center p-4">
+        <div class="bg-parchment w-full max-w-lg rounded-sm p-6 sm:p-8 border-4 border-[#8b5a2b] shadow-[0_0_50px_rgba(212,175,55,0.2)] text-center">
+            <h2 class="font-title text-2xl text-[#5c3a21] mb-4 border-b-2 border-[#5c3a21] pb-2">Titah Diraja: Pengembaraan Sasterawan</h2>
+            <div class="text-left text-sm sm:text-base leading-relaxed mb-6 text-[#2c1e16] space-y-2">
+                <p><b>Wabak Aksara</b> telah menyerang! Arkib diraja sedang runtuh.</p>
+                <ul class="list-disc pl-5">
+                    <li>Kawal Sasterawan Diraja melepasi 3 Tahap arkib.</li>
+                    <li>Cari <b>Peti Harta (Chest)</b> dan selesaikan cabaran rawak (random) untuk mendapatkan <b>Kunci (Fragmen)</b>.</li>
+                    <li>Sentuh <b>Kotak Misteri (?)</b> untuk menjawab MCQ dan memenangi Kuasa Khas (Pistol/Sayap Terbang)!</li>
+                </ul>
+                <p class="text-red-700 font-bold mt-2">Awas! Anda dibekalkan 5 Nyawa (❤️). Terkena Perangkap atau Raksasa Hitam akan menolak 1 Nyawa dan 15 saat masa!</p>
+                <div class="bg-black/10 p-2 rounded mt-2 text-center text-xs">
+                    <b>Kawalan PC:</b> A/D (Gerak), W/Space (Lompat), E (Buka Peti), F (Tembak jika ada Pistol)
+                </div>
+            </div>
+            <button onclick="startGame()" class="bg-[#5c3a21] text-[#f4e4bc] px-8 py-3 rounded text-xl font-bold hover:bg-[#3e2723] transition-colors border-2 border-[#d4af37]">
+                Mula Pengembaraan
+            </button>
+        </div>
+    </div>
+
+    <!-- 任务 A -->
+    <div id="modal-a" class="fixed inset-0 bg-black/80 z-40 hidden justify-center items-center p-4">
+        <div class="bg-parchment w-full max-w-2xl rounded p-6 flex flex-col border-2 border-[#8b5a2b]">
+            <h2 class="font-title text-xl font-bold text-[#5c3a21] mb-2 border-b border-[#8b5a2b] pb-2">Peti Tahap 1: Ujian Pemurnian</h2>
+            <p class="mb-2 italic text-sm text-gray-600">Arahan: Baiki kesalahan ejaan/imbuhan/tanda baca pada teks kuno ini berdasarkan petunjuk.</p>
+            <div id="task-a-text" class="bg-red-50 p-3 rounded mb-4 border border-red-200 text-red-900">
+                <!-- Dynamic Content -->
+            </div>
+            <textarea id="input-task-a" class="w-full h-24 p-3 bg-white/50 border border-[#8b5a2b] rounded focus:outline-none focus:ring-2 focus:ring-[#d4af37] resize-none" spellcheck="false"></textarea>
+            <div id="hint-a" class="text-red-600 text-sm mt-2 hidden bg-red-100 p-2 rounded border border-red-300"></div>
+            <button onclick="checkTaskA()" class="w-full bg-[#5c3a21] text-[#f4e4bc] py-3 mt-4 rounded font-bold hover:bg-[#3e2723]">Buka Kunci (Sahkan)</button>
+        </div>
+    </div>
+
+    <!-- 任务 B -->
+    <div id="modal-b" class="fixed inset-0 bg-black/80 z-40 hidden justify-center items-center p-4">
+        <div class="bg-parchment w-full max-w-2xl rounded p-6 flex flex-col border-2 border-[#8b5a2b]">
+            <h2 class="font-title text-xl font-bold text-[#5c3a21] mb-2 border-b border-[#8b5a2b] pb-2">Peti Tahap 2: Ujian Kohesi</h2>
+            <p class="mb-2 italic text-sm text-gray-600">Arahan: Susun semula ayat supaya menjadi perenggan yang logik. Guna ▲ dan ▼.</p>
+            <ul id="sortable-list" class="space-y-2 mb-4 text-sm sm:text-base"></ul>
+            <div id="hint-b" class="text-red-600 text-sm mb-4 hidden bg-red-100 p-2 rounded border border-red-300"></div>
+            <button onclick="checkTaskB()" class="w-full bg-[#5c3a21] text-[#f4e4bc] py-3 rounded font-bold hover:bg-[#3e2723]">Buka Kunci (Sahkan)</button>
+        </div>
+    </div>
+
+    <!-- 任务 C -->
+    <div id="modal-c" class="fixed inset-0 bg-black/80 z-40 hidden justify-center items-center p-4">
+        <div class="bg-parchment w-full max-w-2xl rounded p-6 flex flex-col border-2 border-[#8b5a2b]">
+            <h2 class="font-title text-xl font-bold text-[#5c3a21] mb-2 border-b border-[#8b5a2b] pb-2">Peti Tahap 3: Ujian Perluasan Ayat</h2>
+            <div class="text-sm text-[#5c3a21] mb-2">Luaskan ayat dasar: <b id="task-c-text" class="text-lg bg-white/50 px-2 rounded">"Rakyat hidup bahagia."</b></div>
+            <ul class="list-disc pl-5 mb-2 text-xs sm:text-sm text-gray-700">
+                <li>Lebih <b>12 patah perkataan</b>.</li>
+                <li>Guna <b>Kata Hubung</b> (kerana, dan, dll).</li>
+                <li>Guna <b>Kata Adjektif</b> (aman, makmur, gembira, dll).</li>
+            </ul>
+            <textarea id="input-task-c" class="w-full h-24 p-3 bg-white/50 border border-[#8b5a2b] rounded focus:outline-none focus:ring-2 focus:ring-[#d4af37] resize-none" placeholder="Taip ayat di sini..."></textarea>
+            <p id="word-count" class="text-right text-xs mt-1 text-gray-500">Jumlah: 0</p>
+            <div id="hint-c" class="text-red-600 text-sm mt-2 mb-2 hidden bg-red-100 p-2 rounded border border-red-300"></div>
+            <button onclick="checkTaskC()" class="w-full bg-[#5c3a21] text-[#f4e4bc] py-3 mt-2 rounded font-bold hover:bg-[#3e2723]">Buka Kunci Terakhir</button>
+        </div>
+    </div>
+
+    <!-- MCQ 盲盒答题 -->
+    <div id="modal-mcq" class="fixed inset-0 bg-black/80 z-40 hidden justify-center items-center p-4">
+        <div class="bg-[#1a110f] text-[#d4af37] w-full max-w-xl rounded border-4 border-[#d4af37] p-6 text-center shadow-[0_0_30px_#d4af37]">
+            <h2 class="font-title text-2xl font-bold mb-2">✨ KOTAK MISTERI ✨</h2>
+            <p class="mb-6 text-gray-300 italic text-sm">Jawab soalan dengan betul untuk mendapatkan Kuasa Khas (Power-up)!</p>
+            
+            <div id="mcq-question" class="text-lg mb-6 p-4 bg-white/10 rounded font-bold">
+                <!-- Question text -->
+            </div>
+            
+            <div class="flex flex-col gap-3" id="mcq-options">
+                <!-- Options buttons dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 结算 Modal -->
+    <div id="modal-result" class="fixed inset-0 bg-black/95 z-50 hidden justify-center items-center p-4">
+        <div id="result-content" class="bg-parchment w-full max-w-lg rounded p-8 text-center border-4">
+            <h2 id="result-title" class="font-title text-3xl mb-4 font-bold"></h2>
+            <p id="result-desc" class="text-lg mb-8"></p>
+            <button onclick="location.reload()" class="bg-[#5c3a21] text-[#f4e4bc] px-8 py-3 rounded font-bold hover:bg-[#3e2723]">Main Semula</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 题库系统 (Random Puzzles) ====================
+        // 【已修复】采用完全精准对标（Exact Match）防止包含字词误判
+        const poolA = [
+            {
+                original: "Kita mestilah <u>bertanggung jawab</u> untuk menjaga kebersihan. Setiap rakyat perlu <u>kerjasame</u> untuk <u>pastikan</u> kelestarian hutan kita.",
+                expected: "kita mestilah bertanggungjawab untuk menjaga kebersihan. setiap rakyat perlu bekerjasama untuk memastikan kelestarian hutan kita.",
+                hints: ["Ejaan 'bertanggung jawab' adalah salah (Kata Majmuk mantap).", "Ejaan 'kerjasame' salah. (Guna bekerjasama)", "Perkataan 'pastikan' perlukan imbuhan awalan meN-."]
+            },
+            {
+                original: "Semua murid diminta berkumpul di <u>padang,</u>. Pengetua akan <u>memberi</u> ucapan untuk <u>rasmikan</u> kempen sekolah selamat.",
+                expected: "semua murid diminta berkumpul di padang. pengetua akan memberikan ucapan untuk merasmikan kempen sekolah selamat.",
+                hints: ["Tanda baca selepas 'padang' salah (Guna noktah).", "Kata kerja 'memberi' perlukan apitan (memberikan ucapan).", "Perkataan 'rasmikan' perlukan imbuhan meN-...-kan."]
+            },
+            {
+                original: "Pihak berkuasa telah <u>mengambilalih</u> pengurusan sungai itu. Mereka membersihkan sampah <u>sarap</u> dan mendenda pihak <u>yang</u> bersalah",
+                expected: "pihak berkuasa telah mengambil alih pengurusan sungai itu. mereka membersihkan sampah sarap dan mendenda pihak yang bersalah.",
+                hints: ["'mengambil alih' bukan kata majmuk mantap (mesti dieja jarak).", "Ayat terakhir tiada tanda noktah (.)."]
+            }
+        ];
+
+        // Task B (Kohesi) Pool - 4 Ayat, urutan 0,1,2,3
+        const poolB = [
+            [
+                { id: 3, text: "Oleh itu, kita haruslah menanam lebih banyak pokok." }, 
+                { id: 0, text: "Hutan merupakan paru-paru bumi yang sangat penting." }, 
+                { id: 1, text: "Hal ini kerana pokok membekalkan oksigen kepada manusia." }, 
+                { id: 2, text: "Selain itu, hutan juga menjadi habitat flora dan fauna." } 
+            ],
+            [
+                { id: 2, text: "Seterusnya, amalan membaca juga boleh menambahkan ilmu pengetahuan." }, 
+                { id: 0, text: "Membaca adalah satu amalan yang sangat mulia dan berfaedah." }, 
+                { id: 3, text: "Kesimpulannya, jadikanlah membaca sebagai budaya hidup kita." }, 
+                { id: 1, text: "Buktinya, kita dapat mengisi masa lapang dengan aktiviti bermanfaat." } 
+            ],
+            [
+                { id: 1, text: "Ini membolehkan kawasan sekitar menjadi bersih dan terhindar daripada penyakit." },
+                { id: 3, text: "Tuntasnya, aktiviti sebegini harus diamalkan selalu." },
+                { id: 0, text: "Penduduk Kampung Maju mengadakan aktiviti gotong-royong semalam." },
+                { id: 2, text: "Di samping itu, ia turut mengeratkan silaturahim antara jiran tetangga." }
+            ]
+        ];
+
+        // Task C (Perluasan Ayat) Pool
+        const poolC = [
+            "Rakyat hidup bahagia.",
+            "Buku itu sangat tebal.",
+            "Murid bermain bola sepak."
+        ];
+
+        // MCQ Pool (For Mystery Box)
+        const poolMCQ = [
+            { q: "Pilih ejaan yang BETUL.", options: ["Ulangkaji", "Ulang kaji", "Ulang-kaji"], ans: 1 },
+            { q: "Pilih kata ganti nama diri pertama bagi Raja.", options: ["Patik", "Hamba", "Beta"], ans: 2 },
+            { q: "Apakah simpulan bahasa bagi orang yang rajin bekerja?", options: ["Ulat buku", "Ringan tulang", "Berat tulang"], ans: 1 },
+            { q: "Penjodoh bilangan yang sesuai untuk 'pisau' ialah...", options: ["Bilah", "Laras", "Batang"], ans: 0 },
+            { q: "Pilih ejaan Kata Majmuk mantap yang BETUL.", options: ["Tanggung jawab", "Antara bangsa", "Tandatangan"], ans: 2 }
+        ];
+
+        let currentPuzzleA = null, currentPuzzleB = null, currentPuzzleC = null, currentMCQ = null;
+        let activeMysteryBox = null;
+
+        // ==================== 游戏引擎核心 ====================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const TILE_SIZE = 40; 
+        const COLS = 20;      
+        const ROWS = 15;      
+
+        let GAME_DURATION = 300; 
+        let timeLeft = GAME_DURATION;
+        let timerInterval = null;
+        let gameState = 'START'; 
+        let currentLevel = 0;
+        let hasKeyInCurrentLevel = false;
+        let currentLives = 5; 
+
+        // 玩家特殊能力
+        let hasGun = false;
+        let hasWings = false;
+
+        const timerDisplay = document.getElementById('timer-display');
+        const flashOverlay = document.getElementById('flash-overlay');
+        const livesDisplay = document.getElementById('lives-display');
+        const keys = { left: false, right: false, up: false, action: false, shoot: false };
+
+        const levelData = [
+            [
+                "....................",
+                "....................",
+                "....................",
+                "....................",
+                "....................",
+                "....................",
+                "....................",
+                "....................",
+                ".........?.C........",
+                ".........#####......",
+                "....................",
+                "P..^^..........^^..D",
+                "######........######",
+                "######^^^^^^^^######",
+                "####################"
+            ],
+            [
+                "....................",
+                "....................",
+                "....................",
+                "..........C.........",
+                ".........###........",
+                "....................",
+                "....###.......###...",
+                ".....?..............",
+                ".........M..........",
+                ".......#####........",
+                "....................",
+                "P..................D",
+                "#####...###...######",
+                "#####^^^###^^^######",
+                "####################"
+            ],
+            [
+                "....................",
+                "...................D",
+                ".................###",
+                "....................",
+                "...C.........M......",
+                ".#####.....#####....",
+                "....?...............",
+                ".........M..........",
+                "....#######.........",
+                "....................",
+                "..............###...",
+                "P.....^^............",
+                "###..####..##.######",
+                "###^^####^^##^######",
+                "####################"
+            ]
+        ];
+
+        let walls = [], spikes = [], monsters = [], mysteryBoxes = [], chest = null, door = null, bullets = [];
+        let playerSpawn = {x: 50, y: 50};
+
+        // ==================== 角色类定义 ====================
+        class Player {
+            constructor(x, y) {
+                this.width = 24;  
+                this.height = 38; 
+                this.reset(x, y);
+            }
+
+            reset(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                // 【修复】降低水平速度，告别冲刺感，走路更安稳
+                this.speed = 1.7;       
+                // 【修复】降低重力，延长在空中的停留时间，方便反应使用二段跳
+                this.gravity = 0.25;    
+                // 【修复】稍微减小初次起跳力度，保持平稳，避免一跳就飞出屏幕
+                this.jumpPower = -7.5;  
+                this.jumps = 0;
+                this.maxJumps = hasWings ? 999 : 2; 
+                this.isGrounded = false;
+                this.invulnerableTime = 0;
+                this.facing = 1; 
+                this.walkFrame = 0;
+            }
+
+            update() {
+                if(this.invulnerableTime > 0) this.invulnerableTime--;
+
+                if (keys.left) { this.vx = -this.speed; this.facing = -1; this.walkFrame += 0.25; }
+                else if (keys.right) { this.vx = this.speed; this.facing = 1; this.walkFrame += 0.25; }
+                else { this.vx = 0; this.walkFrame = 0; }
+
+                if (keys.up) {
+                    if (this.isGrounded) {
+                        this.vy = this.jumpPower;
+                        this.jumps = 1;
+                        this.isGrounded = false;
+                        keys.up = false; 
+                    } else if (this.jumps < this.maxJumps) {
+                        this.vy = this.jumpPower;
+                        this.jumps++;
+                        keys.up = false;
+                        createParticles(this.x + this.width/2, this.y + this.height, hasWings ? '#00ffff' : '#ffffff');
+                    }
+                }
+
+                if (keys.shoot && hasGun && this.invulnerableTime <= 50) { 
+                    bullets.push(new Bullet(this.x + this.width/2, this.y + this.height/2, this.facing));
+                    keys.shoot = false;
+                    this.invulnerableTime = 20; 
+                }
+
+                this.vy += this.gravity;
+                // 【修复】限制最高下落速度，防止掉落太快来不及按二段跳
+                if (this.vy > 8) this.vy = 8; 
+
+                this.x += this.vx;
+                this.checkCollisions('x');
+
+                this.y += this.vy;
+                this.isGrounded = false;
+                this.checkCollisions('y');
+
+                if (this.x < 0) this.x = 0;
+                if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+                if (this.y > canvas.height) takeDamage();
+            }
+
+            checkCollisions(axis) {
+                for (let wall of walls) {
+                    if (this.x < wall.x + wall.width && this.x + this.width > wall.x &&
+                        this.y < wall.y + wall.height && this.y + this.height > wall.y) {
+                        if (axis === 'x') {
+                            if (this.vx > 0) this.x = wall.x - this.width;
+                            else if (this.vx < 0) this.x = wall.x + wall.width;
+                            this.vx = 0;
+                        } else if (axis === 'y') {
+                            if (this.vy > 0) {
+                                this.y = wall.y - this.height;
+                                this.isGrounded = true;
+                                this.jumps = 0;
+                            } else if (this.vy < 0) {
+                                this.y = wall.y + wall.height;
+                            }
+                            this.vy = 0;
+                        }
+                    }
+                }
+            }
+
+            draw() {
+                if (this.invulnerableTime > 0 && Math.floor(Date.now() / 100) % 2 === 0 && this.invulnerableTime > 20) return;
+                
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height);
+                ctx.scale(this.facing, 1);
+
+                let bounce = 0, legAngle1 = 0, legAngle2 = 0, armAngle1 = 0;
+
+                if (this.isGrounded) {
+                    if (Math.abs(this.vx) > 0) {
+                        bounce = Math.abs(Math.sin(this.walkFrame * 2)) * 1.5;
+                        legAngle1 = Math.sin(this.walkFrame) * 0.7;
+                        legAngle2 = Math.sin(this.walkFrame + Math.PI) * 0.7;
+                        armAngle1 = Math.sin(this.walkFrame + Math.PI) * 0.7;
+                    }
+                } else {
+                    legAngle1 = -0.3; legAngle2 = 0.5; armAngle1 = -1;
+                }
+
+                if (hasWings) {
+                    ctx.save();
+                    ctx.translate(-5, -20 - bounce);
+                    let wingFlap = Math.sin(Date.now()/100) * 0.5;
+                    ctx.rotate(-0.5 + wingFlap);
+                    ctx.fillStyle = 'rgba(0, 255, 255, 0.6)';
+                    ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff';
+                    ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(-15,-15, -25, -5); ctx.quadraticCurveTo(-15, 5, 0, 5); ctx.fill();
+                    ctx.restore();
+                }
+
+                ctx.save(); ctx.translate(0, -8 - bounce); ctx.rotate(legAngle2); ctx.fillStyle = '#1a1a1a'; ctx.fillRect(-2, 0, 4, 8); ctx.restore();
+                ctx.save(); ctx.translate(0, -8 - bounce); ctx.rotate(legAngle1); ctx.fillStyle = '#2c1e16'; ctx.fillRect(-2, 0, 4, 8); ctx.restore();
+
+                ctx.fillStyle = '#8b2500'; ctx.fillRect(-6, -20 - bounce, 12, 12);
+                ctx.fillStyle = '#d4af37'; ctx.fillRect(-7, -12 - bounce, 14, 5); 
+
+                ctx.fillStyle = '#f1c27d'; ctx.beginPath(); ctx.arc(0, -25 - bounce, 5.5, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(2.5, -26 - bounce, 1.2, 0, Math.PI*2); ctx.fill(); 
+
+                ctx.fillStyle = '#d4af37'; ctx.beginPath(); ctx.moveTo(-5, -29 - bounce); ctx.lineTo(6, -29 - bounce); ctx.lineTo(4, -36 - bounce); ctx.lineTo(-2, -32 - bounce); ctx.closePath(); ctx.fill();
+
+                ctx.save();
+                ctx.translate(0, -18 - bounce);
+                if (hasGun) {
+                    ctx.rotate(-Math.PI/2); 
+                    ctx.fillStyle = '#8b2500'; ctx.fillRect(-1.5, 0, 3, 10);
+                    ctx.fillStyle = '#aaa'; ctx.fillRect(-1, 8, 4, 6);
+                } else {
+                    ctx.rotate(armAngle1);
+                    ctx.fillStyle = '#8b2500'; ctx.fillRect(-1.5, 0, 3, 8);
+                }
+                ctx.restore();
+
+                ctx.restore();
+            }
+        }
+
+        // ==================== 子弹类定义 ====================
+        class Bullet {
+            constructor(x, y, dir) {
+                this.x = x; this.y = y - 10;
+                this.vx = dir * 8;
+                this.width = 6; this.height = 3;
+                this.active = true;
+            }
+            update() {
+                this.x += this.vx;
+                for (let w of walls) {
+                    if (this.x < w.x+w.width && this.x+this.width > w.x && this.y < w.y+w.height && this.y+this.height > w.y) this.active = false;
+                }
+            }
+            draw() {
+                ctx.fillStyle = '#ffff00';
+                ctx.shadowBlur = 5; ctx.shadowColor = 'yellow';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Monster {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.width = 30; this.height = 30;
+                this.vx = 2; 
+                this.alive = true;
+            }
+            update() {
+                if(!this.alive) return;
+                this.x += this.vx;
+                let hitWall = false, onGround = false;
+                let nextX = this.x + (this.vx > 0 ? this.width : 0);
+                let footY = this.y + this.height + 2;
+
+                for (let wall of walls) {
+                    if (this.x < wall.x + wall.width && this.x + this.width > wall.x && this.y < wall.y + wall.height && this.y + this.height > wall.y) hitWall = true;
+                    if (nextX >= wall.x && nextX <= wall.x + wall.width && footY >= wall.y && footY <= wall.y + wall.height) onGround = true;
+                }
+
+                if (hitWall || !onGround || this.x <= 0 || this.x + this.width >= canvas.width) {
+                    this.vx *= -1; this.x += this.vx * 2; 
+                }
+            }
+            draw() {
+                if(!this.alive) return;
+                ctx.save(); ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                let floatY = Math.sin(Date.now() / 200 + this.x) * 3;
+                
+                ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(139, 0, 139, 0.8)';
+                ctx.fillStyle = '#111'; 
+                ctx.beginPath(); ctx.arc(0, floatY, 12, Math.PI, 0); ctx.quadraticCurveTo(8, floatY + 15, 12, floatY + 10); ctx.quadraticCurveTo(4, floatY + 12, 0, floatY + 16); ctx.quadraticCurveTo(-4, floatY + 12, -12, floatY + 10); ctx.quadraticCurveTo(-8, floatY + 15, -12, floatY); ctx.fill();
+
+                ctx.shadowBlur = 10; ctx.shadowColor = 'red'; ctx.fillStyle = '#ff0000';
+                let eyeOffsetX = this.vx > 0 ? 3 : -3;
+                ctx.beginPath(); ctx.arc(-4 + eyeOffsetX, floatY - 2, 2, 0, Math.PI * 2); ctx.arc(4 + eyeOffsetX, floatY - 2, 2, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        const player = new Player(50, 50);
+        let particles = [];
+
+        function createParticles(x, y, color = '#ffffff') {
+            for(let i=0; i<5; i++){
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: Math.random() * 2,
+                    life: 20,
+                    color: color
+                });
+            }
+        }
+
+        // ==================== 关卡渲染 ====================
+        function loadLevel(levelIndex) {
+            walls = []; spikes = []; monsters = []; mysteryBoxes = []; chest = null; door = null; bullets = [];
+            hasKeyInCurrentLevel = false;
+            document.getElementById('level-display').textContent = `Tahap ${levelIndex + 1}`;
+            
+            currentPuzzleA = poolA[Math.floor(Math.random() * poolA.length)];
+            currentPuzzleB = poolB[Math.floor(Math.random() * poolB.length)];
+            currentPuzzleC = poolC[Math.floor(Math.random() * poolC.length)];
+
+            document.getElementById('task-a-text').innerHTML = currentPuzzleA.original;
+            document.getElementById('input-task-a').value = currentPuzzleA.original.replace(/<\/?u>/g, '');
+            document.getElementById('task-c-text').textContent = `"${currentPuzzleC}"`;
+
+            const data = levelData[levelIndex];
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const char = data[row][col];
+                    const x = col * TILE_SIZE, y = row * TILE_SIZE;
+                    if (char === '#') walls.push({x, y, width: TILE_SIZE, height: TILE_SIZE});
+                    else if (char === '^') spikes.push({x, y, width: TILE_SIZE, height: TILE_SIZE});
+                    else if (char === 'M') monsters.push(new Monster(x, y + 10));
+                    else if (char === 'C') chest = {x, y, width: TILE_SIZE, height: TILE_SIZE, opened: false};
+                    else if (char === '?') mysteryBoxes.push({x, y, width: TILE_SIZE, height: TILE_SIZE, active: true});
+                    else if (char === 'D') door = {x, y, width: TILE_SIZE, height: TILE_SIZE};
+                    else if (char === 'P') playerSpawn = {x, y};
+                }
+            }
+            player.reset(playerSpawn.x, playerSpawn.y);
+        }
+
+        function drawEnvironment() {
+            ctx.fillStyle = '#4a3728'; ctx.strokeStyle = '#2c1e16'; ctx.lineWidth = 2;
+            for (let w of walls) {
+                ctx.fillRect(w.x, w.y, w.width, w.height); ctx.strokeRect(w.x, w.y, w.width, w.height);
+                ctx.beginPath(); ctx.moveTo(w.x + 5, w.y + 10); ctx.lineTo(w.x + w.width - 5, w.y + 10); ctx.moveTo(w.x + 5, w.y + 30); ctx.lineTo(w.x + w.width - 5, w.y + 30); ctx.stroke();
+            }
+
+            ctx.fillStyle = '#a1a1aa';
+            for (let s of spikes) {
+                ctx.beginPath(); ctx.moveTo(s.x, s.y + s.height); ctx.lineTo(s.x + s.width / 2, s.y + s.height/2); ctx.lineTo(s.x + s.width, s.y + s.height); ctx.fill();
+                ctx.strokeStyle = '#ef4444'; ctx.stroke();
+            }
+
+            if (chest && !chest.opened) {
+                let cx = chest.x + 5, cy = chest.y + 10;
+                ctx.fillStyle = '#b48600'; ctx.fillRect(cx, cy, 30, 25);
+                ctx.beginPath(); ctx.arc(cx + 15, cy, 15, Math.PI, 0); ctx.fill();
+                ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2; ctx.strokeRect(cx, cy, 30, 25); ctx.beginPath(); ctx.arc(cx + 15, cy, 15, Math.PI, 0); ctx.stroke();
+                ctx.fillStyle = '#e5e7eb'; ctx.fillRect(cx + 12, cy + 5, 6, 8); 
+                
+                if(checkIntersection(player, chest)) { ctx.fillStyle = 'white'; ctx.font = '14px Arial'; ctx.fillText("Tekan [E]", chest.x - 10, chest.y - 10); }
+            }
+
+            for(let mb of mysteryBoxes) {
+                if(mb.active) {
+                    ctx.fillStyle = '#eab308'; 
+                    let floatY = Math.sin(Date.now() / 300 + mb.x) * 5;
+                    ctx.fillRect(mb.x, mb.y + floatY, mb.width, mb.height);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 24px Arial'; ctx.fillText("?", mb.x + 12, mb.y + 30 + floatY);
+                }
+            }
+
+            if (door) {
+                ctx.fillStyle = hasKeyInCurrentLevel ? '#059669' : '#4a3728'; ctx.fillRect(door.x + 2, door.y - 10, 36, 50);
+                ctx.beginPath(); ctx.arc(door.x + 20, door.y - 10, 18, Math.PI, 0); ctx.fill();
+                ctx.fillStyle = '#111'; ctx.fillRect(door.x + 6, door.y - 6, 28, 46);
+                ctx.beginPath(); ctx.arc(door.x + 20, door.y - 6, 14, Math.PI, 0); ctx.fill();
+                
+                if (hasKeyInCurrentLevel) {
+                    ctx.shadowBlur = 15; ctx.shadowColor = '#10b981'; ctx.fillStyle = '#34d399';
+                    ctx.beginPath(); ctx.arc(door.x + 20, door.y + 15, 4, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+                } else {
+                    ctx.fillStyle = '#ef4444'; ctx.fillRect(door.x + 18, door.y + 13, 4, 6);
+                }
+            }
+            
+            for(let i=particles.length-1; i>=0; i--){
+                let p = particles[i];
+                ctx.fillStyle = p.color;
+                p.x += p.vx; p.y += p.vy; p.life--;
+                ctx.fillRect(p.x, p.y, 4, 4);
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        // ==================== 游戏循环 ====================
+        function checkIntersection(r1, r2) {
+            return !(r2.x > r1.x + r1.width || r2.x + r2.width < r1.x || r2.y > r1.y + r1.height || r2.y + r2.height < r1.y);
+        }
+
+        function takeDamage() {
+            if (player.invulnerableTime > 0) return;
+            currentLives--; updateLivesUI();
+            if (currentLives <= 0) { gameOver(false, "Nyawa Habis"); return; }
+            timeLeft -= 15; if (timeLeft < 0) timeLeft = 0; updateTimerUI();
+            
+            flashOverlay.style.opacity = '0.6'; setTimeout(() => { flashOverlay.style.opacity = '0'; }, 300);
+            timerDisplay.parentElement.classList.remove('shake'); void timerDisplay.parentElement.offsetWidth; timerDisplay.parentElement.classList.add('shake');
+            
+            player.reset(playerSpawn.x, playerSpawn.y); player.invulnerableTime = 60; 
+        }
+
+        function interact() {
+            if (gameState !== 'PLAYING') return;
+            if (chest && !chest.opened && checkIntersection(player, chest)) {
+                gameState = 'PAUSED'; keys.left = keys.right = keys.up = false; 
+                if (currentLevel === 0) { document.getElementById('modal-a').classList.remove('hidden'); document.getElementById('modal-a').classList.add('flex'); }
+                if (currentLevel === 1) { document.getElementById('modal-b').classList.remove('hidden'); document.getElementById('modal-b').classList.add('flex'); initTaskBList(); }
+                if (currentLevel === 2) { document.getElementById('modal-c').classList.remove('hidden'); document.getElementById('modal-c').classList.add('flex'); setupWordCounter(); }
+            }
+
+            if (door && checkIntersection(player, door)) {
+                if (hasKeyInCurrentLevel) {
+                    currentLevel++;
+                    if (currentLevel >= levelData.length) gameOver(true);
+                    else loadLevel(currentLevel);
+                }
+            }
+        }
+
+        function loop() {
+            if (gameState === 'PLAYING') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                player.update();
+                
+                for(let mb of mysteryBoxes) {
+                    if(mb.active && checkIntersection(player, mb)) {
+                        gameState = 'PAUSED'; keys.left = keys.right = keys.up = false; keys.shoot = false;
+                        activeMysteryBox = mb;
+                        showMCQModal();
+                        break; // 修复：使用 break 替代 return，防止整个画面渲染循环被意外杀死
+                    }
+                }
+
+                for(let i=bullets.length-1; i>=0; i--){
+                    let b = bullets[i]; b.update(); b.draw();
+                    if(!b.active) { bullets.splice(i,1); continue; }
+                    for(let m of monsters) {
+                        if(m.alive && checkIntersection(b, m)) {
+                            m.alive = false; b.active = false;
+                            createParticles(m.x+15, m.y+15, '#ff0000');
+                        }
+                    }
+                }
+
+                for (let m of monsters) {
+                    m.update(); if (m.alive && checkIntersection(player, m)) takeDamage();
+                }
+
+                for (let s of spikes) {
+                    let spikeHitbox = {x: s.x+5, y: s.y+20, width: s.width-10, height: s.height-20};
+                    if (checkIntersection(player, spikeHitbox)) takeDamage();
+                }
+
+                drawEnvironment();
+                for (let m of monsters) m.draw();
+                player.draw();
+                
+                if(door && checkIntersection(player, door)) {
+                    ctx.fillStyle = hasKeyInCurrentLevel ? '#10b981' : '#ff6b6b'; ctx.font = 'bold 14px Arial';
+                    ctx.fillText(hasKeyInCurrentLevel ? "Tekan [E] / [Atas] masuk" : "Mesti buka Peti dahulu!", door.x - 40, door.y - 15);
+                }
+            }
+            requestAnimationFrame(loop);
+        }
+
+        function showIntro() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('modal-intro').classList.remove('hidden'); document.getElementById('modal-intro').classList.add('flex');
+        }
+
+        function startGame() {
+            document.getElementById('modal-intro').classList.add('hidden'); document.getElementById('modal-intro').classList.remove('flex');
+            gameState = 'PLAYING'; currentLevel = 0; currentLives = 5; timeLeft = GAME_DURATION;
+            hasGun = false; hasWings = false; document.getElementById('power-gun').classList.add('hidden'); document.getElementById('power-wing').classList.add('hidden'); document.getElementById('btn-shoot').classList.add('hidden');
+            
+            updateLivesUI(); loadLevel(currentLevel); updateTimerUI();
+            
+            clearInterval(timerInterval); 
+            timerInterval = setInterval(() => {
+                if (gameState !== 'PLAYING') return; 
+                timeLeft--; updateTimerUI();
+                if (timeLeft <= 0) gameOver(false, "Masa Tamat");
+            }, 1000);
+            
+            requestAnimationFrame(loop);
+        }
+
+        function updateTimerUI() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0'); const s = (timeLeft % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${m}:${s}`;
+            if (timeLeft <= 60) timerDisplay.classList.replace('text-yellow-100', 'text-red-500');
+        }
+
+        function updateLivesUI() {
+            let hearts = ""; for (let i = 0; i < currentLives; i++) hearts += "❤️"; for (let i = currentLives; i < 5; i++) hearts += "🖤"; 
+            livesDisplay.textContent = hearts;
+        }
+
+        function applyPenaltyModal() {
+            timeLeft -= 15; if (timeLeft < 0) timeLeft = 0; updateTimerUI();
+            currentLives--; updateLivesUI();
+            flashOverlay.style.opacity = '0.6'; setTimeout(() => { flashOverlay.style.opacity = '0'; }, 300);
+            
+            if (currentLives <= 0) {
+                document.getElementById('modal-a').classList.add('hidden'); document.getElementById('modal-b').classList.add('hidden'); document.getElementById('modal-c').classList.add('hidden'); document.getElementById('modal-mcq').classList.add('hidden');
+                gameOver(false, "Nyawa Habis");
+            }
+        }
+
+        function showSuccessToast() {
+            const toast = document.getElementById('toast-success');
+            toast.classList.remove('toast-success-anim');
+            void toast.offsetWidth; // trigger reflow
+            toast.classList.add('toast-success-anim');
+        }
+
+        function showItemToast(itemName, icon) {
+            const toast = document.getElementById('toast-item');
+            document.getElementById('toast-item-icon').textContent = icon;
+            document.getElementById('toast-item-text').textContent = "Mendapat " + itemName + "!";
+            toast.classList.remove('toast-success-anim');
+            void toast.offsetWidth; 
+            toast.classList.add('toast-success-anim');
+        }
+
+        function unlockSuccess(modalId, fragChar) {
+            document.getElementById(modalId).classList.add('hidden'); document.getElementById(modalId).classList.remove('flex');
+            chest.opened = true; hasKeyInCurrentLevel = true; gameState = 'PLAYING';
+            
+            const invIcon = document.getElementById(`inv-${fragChar.toLowerCase()}`);
+            invIcon.classList.remove('grayscale', 'text-gray-600'); invIcon.classList.add('text-[#d4af37]', 'font-bold', 'animate-bounce');
+            
+            showSuccessToast(); 
+        }
+
+        function gameOver(isWin, reason = "Masa Tamat") {
+            gameState = 'GAMEOVER'; clearInterval(timerInterval);
+            const modalResult = document.getElementById('modal-result'); const title = document.getElementById('result-title'); const desc = document.getElementById('result-desc');
+            modalResult.classList.remove('hidden'); modalResult.classList.add('flex');
+            
+            if (isWin) {
+                title.textContent = "🏆 Sejarah Terselamat!"; title.className = "font-title text-3xl mb-4 font-bold text-green-500";
+                desc.innerHTML = `Anda berjaya melepasi 3 tahap arkib dan mengumpul kesemua fragmen dalam masa <b>${GAME_DURATION - timeLeft} saat</b> dengan <b>${currentLives} Nyawa</b> berbaki.`;
+            } else {
+                title.textContent = "💀 Sejarah Dilupakan..."; title.className = "font-title text-3xl mb-4 font-bold text-red-600";
+                if (reason === "Nyawa Habis") desc.textContent = "Anda telah kehabisan nyawa! Wabak Aksara telah menewaskan anda...";
+                else desc.textContent = "Masa telah tamat. Wabak Aksara telah menghapuskan segalanya...";
+            }
+        }
+
+        // ==================== 答题验证逻辑 (精准匹配) ====================
+        // 【已修复】标准化文本内容（去标点、统一小写、去多余空格）后进行严格比对，不再发生错词包容问题
+        function normalizeText(text) {
+            return text.toLowerCase().replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        function checkTaskA() {
+            const inputRaw = document.getElementById('input-task-a').value;
+            const input = normalizeText(inputRaw);
+            const expected = normalizeText(currentPuzzleA.expected);
+            
+            const hintEl = document.getElementById('hint-a'); hintEl.classList.add('hidden'); 
+
+            if (input === expected) {
+                unlockSuccess('modal-a', 'A');
+            } else {
+                hintEl.innerHTML = "<b>Petunjuk (Hint):</b><br> - " + currentPuzzleA.hints.join("<br> - ");
+                hintEl.classList.remove('hidden'); applyPenaltyModal();
+            }
+        }
+
+        function initTaskBList() {
+            const list = document.getElementById('sortable-list'); list.innerHTML = '';
+            let shuffled = [...currentPuzzleB].sort(() => Math.random() - 0.5);
+            shuffled.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center p-2 bg-white/60 border border-[#8b5a2b] rounded text-[#5c3a21]";
+                li.dataset.id = item.id;
+                li.innerHTML = `<span class="flex-1 pr-2">${item.text}</span><div class="flex flex-col gap-1"><button onclick="moveItem(this, -1)" class="px-2 py-1 bg-[#8b5a2b] text-white rounded text-xs">▲</button><button onclick="moveItem(this, 1)" class="px-2 py-1 bg-[#8b5a2b] text-white rounded text-xs">▼</button></div>`;
+                list.appendChild(li);
+            });
+        }
+        function moveItem(btn, dir) {
+            const li = btn.closest('li'); const ul = li.parentNode;
+            if (dir === -1 && li.previousElementSibling) ul.insertBefore(li, li.previousElementSibling);
+            else if (dir === 1 && li.nextElementSibling) ul.insertBefore(li, li.nextElementSibling.nextElementSibling);
+        }
+        function checkTaskB() {
+            const hintEl = document.getElementById('hint-b'); hintEl.classList.add('hidden');
+            const order = Array.from(document.querySelectorAll('#sortable-list li')).map(li => parseInt(li.dataset.id));
+            
+            if (order.join(',') === "0,1,2,3") unlockSuccess('modal-b', 'B');
+            else {
+                hintEl.innerHTML = "<b>Petunjuk:</b> Sila pastikan urutan logik: Topik -> Sebab/Huraian -> Tambahan -> Kesimpulan.";
+                hintEl.classList.remove('hidden'); applyPenaltyModal();
+            }
+        }
+
+        function setupWordCounter() {
+            const inputEl = document.getElementById('input-task-c'); const countEl = document.getElementById('word-count');
+            inputEl.addEventListener('input', () => { const text = inputEl.value.trim(); countEl.textContent = `Jumlah: ${text ? text.split(/\s+/).length : 0}`; });
+        }
+        function checkTaskC() {
+            const hintEl = document.getElementById('hint-c'); hintEl.classList.add('hidden');
+            const val = document.getElementById('input-task-c').value.trim().toLowerCase();
+            const words = val.split(/\s+/).filter(w => w.length > 0);
+            const hasHubung = ['kerana', 'dan', 'untuk', 'supaya', 'agar', 'sambil', 'lalu', 'maka', 'apabila'].some(k => val.includes(k));
+            const hasAdjektif = ['aman', 'makmur', 'gembira', 'sejahtera', 'harmoni', 'selesa', 'tebal', 'rajin', 'seronok', 'hebat', 'sihat'].some(k => val.includes(k));
+            
+            const baseWords = currentPuzzleC.replace('.','').toLowerCase().split(' ');
+            const hasBase = baseWords.every(w => val.includes(w));
+
+            if (words.length >= 12 && hasHubung && hasAdjektif && hasBase) unlockSuccess('modal-c', 'C');
+            else {
+                let hints = [];
+                if (words.length < 12) hints.push(`Ayat terlalu pendek (${words.length}/12 patah perkataan).`);
+                if (!hasHubung) hints.push("Tiada Kata Hubung dikesan.");
+                if (!hasAdjektif) hints.push("Tiada Kata Adjektif dikesan.");
+                if (!hasBase) hints.push("Sila kekalkan frasa asas dalam ayat anda.");
+                hintEl.innerHTML = "<b>Petunjuk:</b><br>- " + hints.join("<br>- ");
+                hintEl.classList.remove('hidden'); applyPenaltyModal();
+            }
+        }
+
+        // ==================== MCQ 系统 (Mystery Box) ====================
+        function showMCQModal() {
+            currentMCQ = poolMCQ[Math.floor(Math.random() * poolMCQ.length)];
+            document.getElementById('mcq-question').textContent = currentMCQ.q;
+            
+            const optionsContainer = document.getElementById('mcq-options');
+            optionsContainer.innerHTML = '';
+            
+            currentMCQ.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full bg-[#5c3a21] text-[#f4e4bc] py-3 rounded font-bold hover:bg-[#8b5a2b] transition border border-[#d4af37]";
+                btn.textContent = opt;
+                btn.onclick = () => answerMCQ(index);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('modal-mcq').classList.remove('hidden');
+            document.getElementById('modal-mcq').classList.add('flex');
+        }
+
+        function answerMCQ(selectedIndex) {
+            if(selectedIndex === currentMCQ.ans) {
+                document.getElementById('modal-mcq').classList.add('hidden');
+                document.getElementById('modal-mcq').classList.remove('flex');
+                activeMysteryBox.active = false; 
+                gameState = 'PLAYING';
+
+                const rnd = Math.random();
+                if (rnd < 0.4 && !hasGun) {
+                    hasGun = true; showItemToast("Pistol", "🔫");
+                    document.getElementById('power-gun').classList.remove('hidden');
+                    document.getElementById('btn-shoot').classList.remove('hidden');
+                } else if (rnd < 0.8 && !hasWings) {
+                    hasWings = true; player.maxJumps = 999; showItemToast("Sayap Sakti", "🪽");
+                    document.getElementById('power-wing').classList.remove('hidden');
+                } else {
+                    if(currentLives < 5) currentLives++; updateLivesUI();
+                    showItemToast("Nyawa Tambahan", "💖");
+                }
+            } else {
+                alert("❌ Jawapan salah! Kotak Misteri hilang.");
+                document.getElementById('modal-mcq').classList.add('hidden');
+                document.getElementById('modal-mcq').classList.remove('flex');
+                activeMysteryBox.active = false;
+                gameState = 'PLAYING';
+            }
+        }
+
+        // ==================== 操作监听 ====================
+        window.addEventListener('keydown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
+            if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') { 
+                keys.up = true;
+                if (door && checkIntersection(player, door) && hasKeyInCurrentLevel) interact();
+            }
+            if (e.code === 'KeyE') interact();
+            if (e.code === 'KeyF') keys.shoot = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
+            if (e.code === 'KeyF') keys.shoot = false;
+        });
+
+        const bindTouch = (id, keyName, isInteract = false) => {
+            const btn = document.getElementById(id);
+            if(!btn) return;
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); if(isInteract) interact(); else keys[keyName] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); if(!isInteract) keys[keyName] = false; });
+        };
+        bindTouch('btn-left', 'left');
+        bindTouch('btn-right', 'right');
+        bindTouch('btn-jump', 'up');
+        bindTouch('btn-action', 'action', true);
+        bindTouch('btn-shoot', 'shoot');
+
+    </script>
+</body>
+</html>
