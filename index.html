@@ -32,7 +32,7 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            height: 100dvh; /* 适配手机浏览器动态高度，防止被底部状态栏遮挡 */
+            height: 100dvh; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -71,7 +71,6 @@
         }
         .shake { animation: shake 0.4s ease-in-out; }
 
-        /* 主页按钮流光动画 */
         @keyframes shine {
             100% { transform: translateX(100%); }
         }
@@ -79,7 +78,6 @@
             animation: shine 1s ease-in-out forwards;
         }
 
-        /* 成功提示 Toast 动画 */
         @keyframes slideDownFader {
             0% { transform: translate(-50%, -100%); opacity: 0; }
             10% { transform: translate(-50%, 20px); opacity: 1; }
@@ -92,10 +90,10 @@
 
         .mobile-controls {
             position: absolute;
-            bottom: env(safe-area-inset-bottom, 40px); /* 适配全面屏手机的安全区 */
-            margin-bottom: 30px; /* 整体再向上抬高，确保大拇指能舒服按到 */
+            bottom: env(safe-area-inset-bottom, 40px);
+            margin-bottom: 30px; 
             width: 100%;
-            padding: 0 30px; /* 两侧往内缩，防止曲面屏边缘难按 */
+            padding: 0 30px; 
             display: flex;
             justify-content: space-between;
             z-index: 50;
@@ -106,7 +104,7 @@
             background: rgba(44, 30, 22, 0.8);
             border: 2px solid var(--color-gold);
             color: var(--color-gold);
-            width: 60px; /* 稍微增大按钮，更容易点中 */
+            width: 60px; 
             height: 60px;
             border-radius: 50%;
             display: flex;
@@ -134,14 +132,20 @@
             <h2 class="font-title text-xl md:text-2xl text-[#f4e4bc] mb-2 tracking-widest">MISTERI BALAI AKSARA</h2>
             <h1 class="font-title text-4xl md:text-7xl font-bold mb-6 drop-shadow-[0_0_20px_rgba(212,175,55,0.8)]">UJIAN SASTERAWAN<br>DIRAJA</h1>
             
-            <p class="text-sm md:text-lg text-gray-300 max-w-2xl mb-12 italic">
-                Satu permainan interaktif untuk menguji kemahiran tatabahasa dan penulisan Bahasa Melayu.
+            <p class="text-sm md:text-lg text-gray-300 max-w-2xl mb-8 italic">
+                Sila pilih tahap kesukaran teka-teki tatabahasa anda.
             </p>
 
-            <button onclick="showIntro()" class="btn-shine relative px-10 py-4 bg-[#5c3a21] hover:bg-[#8b5a2b] text-[#f4e4bc] font-bold text-xl md:text-2xl rounded-sm border-2 border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all transform hover:scale-105 overflow-hidden">
-                <span class="relative z-10">MASUK KE BALAI AKSARA</span>
-                <div class="shine-effect absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full"></div>
-            </button>
+            <div class="flex flex-col sm:flex-row gap-4 mb-12">
+                <button onclick="selectDifficulty('biasa')" class="btn-shine relative px-8 py-3 bg-[#4a3728] hover:bg-[#8b5a2b] text-[#f4e4bc] font-bold text-xl rounded border border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all transform hover:scale-105 overflow-hidden">
+                    <span class="relative z-10">MOD BIASA (Normal)</span>
+                    <div class="shine-effect absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full"></div>
+                </button>
+                <button onclick="selectDifficulty('sukar')" class="btn-shine relative px-8 py-3 bg-[#5c1a1a] hover:bg-[#8b2525] text-[#f4e4bc] font-bold text-xl rounded border border-[#ef4444] shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all transform hover:scale-105 overflow-hidden">
+                    <span class="relative z-10">MOD SUKAR (Hard)</span>
+                    <div class="shine-effect absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full"></div>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -165,6 +169,7 @@
             <div class="bg-black/70 border border-[#d4af37] px-4 py-2 rounded">
                 <div class="flex items-center gap-4">
                     <h1 class="font-title text-[#d4af37] text-lg sm:text-xl" id="level-display">Tahap 1</h1>
+                    <span id="diff-badge" class="text-xs px-2 py-0.5 rounded bg-gray-600 text-white">Biasa</span>
                     <div id="lives-display" class="text-red-500 text-sm sm:text-base tracking-widest drop-shadow-md">❤️❤️❤️❤️❤️</div>
                 </div>
                 <div class="flex gap-2 mt-1" id="inventory-display">
@@ -172,7 +177,6 @@
                     <span class="text-gray-600 grayscale" id="inv-b">📜B</span>
                     <span class="text-gray-600 grayscale" id="inv-c">📜C</span>
                 </div>
-                <!-- 道具显示 -->
                 <div class="flex gap-2 mt-1 text-xs text-yellow-200" id="powerup-display">
                     <span id="power-gun" class="hidden">🔫 Pistol (F / S)</span>
                     <span id="power-wing" class="hidden">🪽 Terbang (▲)</span>
@@ -206,7 +210,7 @@
                 <p><b>Wabak Aksara</b> telah menyerang! Arkib diraja sedang runtuh.</p>
                 <ul class="list-disc pl-5">
                     <li>Kawal Sasterawan Diraja melepasi 3 Tahap arkib.</li>
-                    <li>Cari <b>Peti Harta (Chest)</b> dan selesaikan cabaran rawak (random) untuk mendapatkan <b>Kunci (Fragmen)</b>.</li>
+                    <li>Cari <b>Peti Harta (Chest)</b> dan selesaikan cabaran rawak untuk mendapatkan <b>Kunci (Fragmen)</b>.</li>
                     <li>Sentuh <b>Kotak Misteri (?)</b> untuk menjawab MCQ dan memenangi Kuasa Khas (Pistol/Sayap Terbang)!</li>
                 </ul>
                 <p class="text-red-700 font-bold mt-2">Awas! Anda dibekalkan 5 Nyawa (❤️). Terkena Perangkap atau Raksasa Hitam akan menolak 1 Nyawa dan 15 saat masa!</p>
@@ -225,9 +229,7 @@
         <div class="bg-parchment w-full max-w-2xl rounded p-6 flex flex-col border-2 border-[#8b5a2b]">
             <h2 class="font-title text-xl font-bold text-[#5c3a21] mb-2 border-b border-[#8b5a2b] pb-2">Peti Tahap 1: Ujian Pemurnian</h2>
             <p class="mb-2 italic text-sm text-gray-600">Arahan: Baiki kesalahan ejaan/imbuhan/tanda baca pada teks kuno ini berdasarkan petunjuk.</p>
-            <div id="task-a-text" class="bg-red-50 p-3 rounded mb-4 border border-red-200 text-red-900">
-                <!-- Dynamic Content -->
-            </div>
+            <div id="task-a-text" class="bg-red-50 p-3 rounded mb-4 border border-red-200 text-red-900"></div>
             <textarea id="input-task-a" class="w-full h-24 p-3 bg-white/50 border border-[#8b5a2b] rounded focus:outline-none focus:ring-2 focus:ring-[#d4af37] resize-none" spellcheck="false"></textarea>
             <div id="hint-a" class="text-red-600 text-sm mt-2 hidden bg-red-100 p-2 rounded border border-red-300"></div>
             <button onclick="checkTaskA()" class="w-full bg-[#5c3a21] text-[#f4e4bc] py-3 mt-4 rounded font-bold hover:bg-[#3e2723]">Buka Kunci (Sahkan)</button>
@@ -251,7 +253,7 @@
             <h2 class="font-title text-xl font-bold text-[#5c3a21] mb-2 border-b border-[#8b5a2b] pb-2">Peti Tahap 3: Ujian Perluasan Ayat</h2>
             <div class="text-sm text-[#5c3a21] mb-2">Luaskan ayat dasar: <b id="task-c-text" class="text-lg bg-white/50 px-2 rounded">"Rakyat hidup bahagia."</b></div>
             <ul class="list-disc pl-5 mb-2 text-xs sm:text-sm text-gray-700">
-                <li>Lebih <b>12 patah perkataan</b>.</li>
+                <li id="req-word-count">Lebih <b>12 patah perkataan</b>.</li>
                 <li>Guna <b>Kata Hubung</b> (kerana, dan, dll).</li>
                 <li>Guna <b>Kata Adjektif</b> (aman, makmur, gembira, dll).</li>
             </ul>
@@ -262,23 +264,18 @@
         </div>
     </div>
 
-    <!-- MCQ 盲盒答题 -->
+    <!-- MCQ -->
     <div id="modal-mcq" class="fixed inset-0 bg-black/80 z-40 hidden justify-center items-center p-4">
         <div class="bg-[#1a110f] text-[#d4af37] w-full max-w-xl rounded border-4 border-[#d4af37] p-6 text-center shadow-[0_0_30px_#d4af37]">
             <h2 class="font-title text-2xl font-bold mb-2">✨ KOTAK MISTERI ✨</h2>
             <p class="mb-6 text-gray-300 italic text-sm">Jawab soalan dengan betul untuk mendapatkan Kuasa Khas (Power-up)!</p>
             
-            <div id="mcq-question" class="text-lg mb-6 p-4 bg-white/10 rounded font-bold">
-                <!-- Question text -->
-            </div>
-            
-            <div class="flex flex-col gap-3" id="mcq-options">
-                <!-- Options buttons dynamically generated -->
-            </div>
+            <div id="mcq-question" class="text-lg mb-6 p-4 bg-white/10 rounded font-bold"></div>
+            <div class="flex flex-col gap-3" id="mcq-options"></div>
         </div>
     </div>
 
-    <!-- 结算 Modal -->
+    <!-- 结算 -->
     <div id="modal-result" class="fixed inset-0 bg-black/95 z-50 hidden justify-center items-center p-4">
         <div id="result-content" class="bg-parchment w-full max-w-lg rounded p-8 text-center border-4">
             <h2 id="result-title" class="font-title text-3xl mb-4 font-bold"></h2>
@@ -288,63 +285,94 @@
     </div>
 
     <script>
-        // ==================== 题库系统 (Random Puzzles) ====================
-        // 【已修复】采用完全精准对标（Exact Match）防止包含字词误判
-        const poolA = [
-            {
-                original: "Kita mestilah <u>bertanggung jawab</u> untuk menjaga kebersihan. Setiap rakyat perlu <u>kerjasame</u> untuk <u>pastikan</u> kelestarian hutan kita.",
-                expected: "kita mestilah bertanggungjawab untuk menjaga kebersihan. setiap rakyat perlu bekerjasama untuk memastikan kelestarian hutan kita.",
-                hints: ["Ejaan 'bertanggung jawab' adalah salah (Kata Majmuk mantap).", "Ejaan 'kerjasame' salah. (Guna bekerjasama)", "Perkataan 'pastikan' perlukan imbuhan awalan meN-."]
-            },
-            {
-                original: "Semua murid diminta berkumpul di <u>padang,</u>. Pengetua akan <u>memberi</u> ucapan untuk <u>rasmikan</u> kempen sekolah selamat.",
-                expected: "semua murid diminta berkumpul di padang. pengetua akan memberikan ucapan untuk merasmikan kempen sekolah selamat.",
-                hints: ["Tanda baca selepas 'padang' salah (Guna noktah).", "Kata kerja 'memberi' perlukan apitan (memberikan ucapan).", "Perkataan 'rasmikan' perlukan imbuhan meN-...-kan."]
-            },
-            {
-                original: "Pihak berkuasa telah <u>mengambilalih</u> pengurusan sungai itu. Mereka membersihkan sampah <u>sarap</u> dan mendenda pihak <u>yang</u> bersalah",
-                expected: "pihak berkuasa telah mengambil alih pengurusan sungai itu. mereka membersihkan sampah sarap dan mendenda pihak yang bersalah.",
-                hints: ["'mengambil alih' bukan kata majmuk mantap (mesti dieja jarak).", "Ayat terakhir tiada tanda noktah (.)."]
-            }
-        ];
+        // ==================== 全局难度与题库系统 (Difficulty & Puzzles) ====================
+        let gameDifficulty = 'biasa'; // 'biasa' (Normal) 或 'sukar' (Hard)
 
-        // Task B (Kohesi) Pool - 4 Ayat, urutan 0,1,2,3
-        const poolB = [
-            [
-                { id: 3, text: "Oleh itu, kita haruslah menanam lebih banyak pokok." }, 
-                { id: 0, text: "Hutan merupakan paru-paru bumi yang sangat penting." }, 
-                { id: 1, text: "Hal ini kerana pokok membekalkan oksigen kepada manusia." }, 
-                { id: 2, text: "Selain itu, hutan juga menjadi habitat flora dan fauna." } 
+        // Task A (Murni)
+        const poolA = {
+            biasa: [
+                {
+                    original: "Kita mestilah <u>bertanggung jawab</u> untuk menjaga kebersihan. Setiap rakyat perlu <u>kerjasame</u> untuk <u>pastikan</u> kelestarian hutan.",
+                    expected: "kita mestilah bertanggungjawab untuk menjaga kebersihan. setiap rakyat perlu bekerjasama untuk memastikan kelestarian hutan.",
+                    hints: ["'bertanggung jawab' adalah salah (Kata Majmuk mantap).", "'kerjasame' salah. (Guna bekerjasama)", "'pastikan' perlukan imbuhan awalan meN-."]
+                },
+                {
+                    original: "Semua murid diminta berkumpul di <u>padang,</u>. Pengetua akan <u>memberi</u> ucapan untuk <u>rasmikan</u> kempen sekolah selamat.",
+                    expected: "semua murid diminta berkumpul di padang. pengetua akan memberikan ucapan untuk merasmikan kempen sekolah selamat.",
+                    hints: ["Tanda baca selepas 'padang' salah (Guna noktah).", "'memberi' perlukan apitan (memberikan ucapan).", "'rasmikan' perlukan imbuhan meN-...-kan."]
+                }
             ],
-            [
-                { id: 2, text: "Seterusnya, amalan membaca juga boleh menambahkan ilmu pengetahuan." }, 
-                { id: 0, text: "Membaca adalah satu amalan yang sangat mulia dan berfaedah." }, 
-                { id: 3, text: "Kesimpulannya, jadikanlah membaca sebagai budaya hidup kita." }, 
-                { id: 1, text: "Buktinya, kita dapat mengisi masa lapang dengan aktiviti bermanfaat." } 
-            ],
-            [
-                { id: 1, text: "Ini membolehkan kawasan sekitar menjadi bersih dan terhindar daripada penyakit." },
-                { id: 3, text: "Tuntasnya, aktiviti sebegini harus diamalkan selalu." },
-                { id: 0, text: "Penduduk Kampung Maju mengadakan aktiviti gotong-royong semalam." },
-                { id: 2, text: "Di samping itu, ia turut mengeratkan silaturahim antara jiran tetangga." }
+            sukar: [
+                {
+                    original: "Pihak pengurusan telah <u>mengenepikan</u> cadangan itu. Mereka mahu <u>mengswastakan</u> projek tersebut demi <u>manafaat</u> bersama.",
+                    expected: "pihak pengurusan telah mengetepikan cadangan itu. mereka mahu menswastakan projek tersebut demi manfaat bersama.",
+                    hints: ["'mengenepikan' sepatutnya 'mengetepikan'.", "'mengswastakan' sepatutnya 'menswastakan'.", "Ejaan 'manafaat' salah, ejaan betul ialah 'manfaat'."]
+                },
+                {
+                    original: "Pelancong dari <u>luarnegara</u> amat menggemari <u>mee</u> goreng. Makanan tradisional kita sungguh <u>menyelerakan.</u>",
+                    expected: "pelancong dari luar negara amat menggemari mi goreng. makanan tradisional kita sungguh menyelerakan.",
+                    hints: ["'luarnegara' dieja jarak.", "Ejaan 'mee' salah mengikut DBP, ejaan yang betul ialah 'mi'.", "Tanda noktah mesti diletakkan selepas perkataan menyelerakan, bukan condong bersama huruf."]
+                },
+                {
+                    original: "Surat rasmi itu perlulah ditandatangani oleh pengurus <u>syarikat.</u> Sila hantar <u>di</u> alamat <u>emel</u> yang disediakan.",
+                    expected: "surat rasmi itu perlulah ditandatangani oleh pengurus syarikat. sila hantar ke alamat e-mel yang disediakan.",
+                    hints: ["Kata sendi nama 'di' salah digunakan untuk arah/tempat tuju (Guna 'ke').", "Ejaan 'emel' salah. Ejaan yang betul ada tanda sempang ('e-mel').", "Tanda noktah perlu ditulis pada akhir ayat."]
+                }
             ]
-        ];
+        };
 
-        // Task C (Perluasan Ayat) Pool
-        const poolC = [
-            "Rakyat hidup bahagia.",
-            "Buku itu sangat tebal.",
-            "Murid bermain bola sepak."
-        ];
+        // Task B (Kohesi)
+        const poolB = {
+            biasa: [
+                [
+                    { id: 3, text: "Oleh itu, kita haruslah menanam lebih banyak pokok." }, 
+                    { id: 0, text: "Hutan merupakan paru-paru bumi yang sangat penting." }, 
+                    { id: 1, text: "Hal ini kerana pokok membekalkan oksigen kepada manusia." }, 
+                    { id: 2, text: "Selain itu, hutan juga menjadi habitat flora dan fauna." } 
+                ],
+                [
+                    { id: 2, text: "Seterusnya, amalan membaca juga boleh menambahkan ilmu pengetahuan." }, 
+                    { id: 0, text: "Membaca adalah satu amalan yang sangat mulia dan berfaedah." }, 
+                    { id: 3, text: "Kesimpulannya, jadikanlah membaca sebagai budaya hidup kita." }, 
+                    { id: 1, text: "Buktinya, kita dapat mengisi masa lapang dengan aktiviti bermanfaat." } 
+                ]
+            ],
+            sukar: [
+                [
+                    { id: 1, text: "Fenomena ini berpunca daripada pelepasan gas rumah hijau yang tidak terkawal." },
+                    { id: 3, text: "Oleh hal yang demikian, langkah drastik perlu diambil sebelum nasi menjadi bubur." },
+                    { id: 0, text: "Kebelakangan ini, isu pemanasan global semakin membimbangkan masyarakat dunia." },
+                    { id: 2, text: "Implikasinya, suhu bumi kian meningkat lalu mencairkan ais di kawasan kutub." }
+                ],
+                [
+                    { id: 2, text: "Namun begitu, sikap segelintir masyarakat yang membuang sampah merumitkan keadaan." },
+                    { id: 0, text: "Sungai merupakan khazanah alam yang perlu dipelihara dengan sebaik-baiknya." },
+                    { id: 3, text: "Tegasnya, kerjasama semua pihak amat ditagih bagi menangani kemelut ini." },
+                    { id: 1, text: "Terdapat pelbagai inisiatif kerajaan untuk membersihkan sungai kita." }
+                ]
+            ]
+        };
 
-        // MCQ Pool (For Mystery Box)
-        const poolMCQ = [
-            { q: "Pilih ejaan yang BETUL.", options: ["Ulangkaji", "Ulang kaji", "Ulang-kaji"], ans: 1 },
-            { q: "Pilih kata ganti nama diri pertama bagi Raja.", options: ["Patik", "Hamba", "Beta"], ans: 2 },
-            { q: "Apakah simpulan bahasa bagi orang yang rajin bekerja?", options: ["Ulat buku", "Ringan tulang", "Berat tulang"], ans: 1 },
-            { q: "Penjodoh bilangan yang sesuai untuk 'pisau' ialah...", options: ["Bilah", "Laras", "Batang"], ans: 0 },
-            { q: "Pilih ejaan Kata Majmuk mantap yang BETUL.", options: ["Tanggung jawab", "Antara bangsa", "Tandatangan"], ans: 2 }
-        ];
+        // Task C (Perluasan) - Hard mode requires 15 words
+        const poolC = {
+            biasa: ["Rakyat hidup bahagia.", "Buku itu sangat tebal.", "Murid bermain bola sepak."],
+            sukar: ["Ekonomi negara semakin berkembang.", "Teknologi moden memudahkan urusan.", "Masalah pencemaran semakin kritikal."]
+        };
+
+        // MCQ
+        const poolMCQ = {
+            biasa: [
+                { q: "Pilih ejaan yang BETUL.", options: ["Ulangkaji", "Ulang kaji", "Ulang-kaji"], ans: 1 },
+                { q: "Pilih kata ganti nama diri pertama bagi Raja.", options: ["Patik", "Hamba", "Beta"], ans: 2 },
+                { q: "Apakah simpulan bahasa bagi orang yang rajin?", options: ["Ulat buku", "Ringan tulang", "Berat tulang"], ans: 1 }
+            ],
+            sukar: [
+                { q: "Pilih penggunaan Hukum D-M yang betul.", options: ["Klinik Mini", "Cili Sos", "Goreng Pisang"], ans: 0 },
+                { q: "Kata majmuk yang manakah dieja rapat?", options: ["Reka bentuk", "Mata pelajaran", "Warganegara"], ans: 2 },
+                { q: "Imbuhan pinjaman 'pra' membawa maksud...", options: ["Selepas", "Sebelum", "Semasa"], ans: 1 },
+                { q: "Pilih ejaan yang TEPAT.", options: ["Efisyen", "Efisien", "Ifisyen"], ans: 1 }
+            ]
+        };
 
         let currentPuzzleA = null, currentPuzzleB = null, currentPuzzleC = null, currentMCQ = null;
         let activeMysteryBox = null;
@@ -364,7 +392,6 @@
         let hasKeyInCurrentLevel = false;
         let currentLives = 5; 
 
-        // 玩家特殊能力
         let hasGun = false;
         let hasWings = false;
 
@@ -493,7 +520,7 @@
 
                 if (this.x < 0) this.x = 0;
                 if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
-                if (this.y > canvas.height) takeDamage(true); // 掉下悬崖强制重置位置
+                if (this.y > canvas.height) takeDamage(true); 
             }
 
             checkCollisions(axis) {
@@ -576,7 +603,7 @@
             }
         }
 
-        // ==================== 子弹类定义 ====================
+        // ==================== 子弹与怪物定义 ====================
         class Bullet {
             constructor(x, y, dir) {
                 this.x = x; this.y = y - 10;
@@ -591,10 +618,8 @@
                 }
             }
             draw() {
-                ctx.fillStyle = '#ffff00';
-                ctx.shadowBlur = 5; ctx.shadowColor = 'yellow';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffff00'; ctx.shadowBlur = 5; ctx.shadowColor = 'yellow';
+                ctx.fillRect(this.x, this.y, this.width, this.height); ctx.shadowBlur = 0;
             }
         }
 
@@ -652,19 +677,29 @@
             }
         }
 
-        // ==================== 关卡渲染 ====================
+        // ==================== 关卡渲染与逻辑 ====================
         function loadLevel(levelIndex) {
             walls = []; spikes = []; monsters = []; mysteryBoxes = []; chest = null; door = null; bullets = [];
             hasKeyInCurrentLevel = false;
             document.getElementById('level-display').textContent = `Tahap ${levelIndex + 1}`;
             
-            currentPuzzleA = poolA[Math.floor(Math.random() * poolA.length)];
-            currentPuzzleB = poolB[Math.floor(Math.random() * poolB.length)];
-            currentPuzzleC = poolC[Math.floor(Math.random() * poolC.length)];
+            // Fetch random puzzles from correct difficulty pool
+            let pA = poolA[gameDifficulty];
+            let pB = poolB[gameDifficulty];
+            let pC = poolC[gameDifficulty];
+            let pmcq = poolMCQ[gameDifficulty];
+
+            currentPuzzleA = pA[Math.floor(Math.random() * pA.length)];
+            currentPuzzleB = pB[Math.floor(Math.random() * pB.length)];
+            currentPuzzleC = pC[Math.floor(Math.random() * pC.length)];
 
             document.getElementById('task-a-text').innerHTML = currentPuzzleA.original;
             document.getElementById('input-task-a').value = currentPuzzleA.original.replace(/<\/?u>/g, '');
             document.getElementById('task-c-text').textContent = `"${currentPuzzleC}"`;
+
+            // Adjust Task C requirement based on difficulty
+            let wordCountReq = gameDifficulty === 'sukar' ? 15 : 12;
+            document.getElementById('req-word-count').innerHTML = `Lebih <b>${wordCountReq} patah perkataan</b>.`;
 
             const data = levelData[levelIndex];
             for (let row = 0; row < ROWS; row++) {
@@ -708,7 +743,7 @@
 
             for(let mb of mysteryBoxes) {
                 if(mb.active) {
-                    ctx.fillStyle = '#eab308'; 
+                    ctx.fillStyle = gameDifficulty === 'sukar' ? '#ef4444' : '#eab308'; // Hard mode box is red!
                     let floatY = Math.sin(Date.now() / 300 + mb.x) * 5;
                     ctx.fillRect(mb.x, mb.y + floatY, mb.width, mb.height);
                     ctx.fillStyle = '#fff'; ctx.font = 'bold 24px Arial'; ctx.fillText("?", mb.x + 12, mb.y + 30 + floatY);
@@ -730,24 +765,18 @@
             }
             
             for(let i=particles.length-1; i>=0; i--){
-                let p = particles[i];
-                ctx.fillStyle = p.color;
-                p.x += p.vx; p.y += p.vy; p.life--;
-                ctx.fillRect(p.x, p.y, 4, 4);
+                let p = particles[i]; ctx.fillStyle = p.color; p.x += p.vx; p.y += p.vy; p.life--; ctx.fillRect(p.x, p.y, 4, 4);
                 if(p.life <= 0) particles.splice(i, 1);
             }
         }
 
-        // ==================== 游戏循环 ====================
         function checkIntersection(r1, r2) {
             return !(r2.x > r1.x + r1.width || r2.x + r2.width < r1.x || r2.y > r1.y + r1.height || r2.y + r2.height < r1.y);
         }
 
         function takeDamage(isFall = false) {
-            // 如果玩家还在无敌时间内，且不是掉下悬崖，则忽略伤害
             if (player.invulnerableTime > 0 && !isFall) return;
             
-            // 扣除生命和时间（防止掉下悬崖时重复扣血）
             if (player.invulnerableTime <= 0) {
                 currentLives--; updateLivesUI();
                 if (currentLives <= 0) { gameOver(false, "Nyawa Habis"); return; }
@@ -757,12 +786,7 @@
                 timerDisplay.parentElement.classList.remove('shake'); void timerDisplay.parentElement.offsetWidth; timerDisplay.parentElement.classList.add('shake');
             }
             
-            // 只有掉下悬崖才会重置位置
-            if (isFall) {
-                player.reset(playerSpawn.x, playerSpawn.y);
-            }
-            
-            // 赋予约 2 秒（120帧）的无敌时间
+            if (isFall) player.reset(playerSpawn.x, playerSpawn.y);
             player.invulnerableTime = 120; 
         }
 
@@ -792,9 +816,7 @@
                 for(let mb of mysteryBoxes) {
                     if(mb.active && checkIntersection(player, mb)) {
                         gameState = 'PAUSED'; keys.left = keys.right = keys.up = false; keys.shoot = false;
-                        activeMysteryBox = mb;
-                        showMCQModal();
-                        break; 
+                        activeMysteryBox = mb; showMCQModal(); break; 
                     }
                 }
 
@@ -803,8 +825,7 @@
                     if(!b.active) { bullets.splice(i,1); continue; }
                     for(let m of monsters) {
                         if(m.alive && checkIntersection(b, m)) {
-                            m.alive = false; b.active = false;
-                            createParticles(m.x+15, m.y+15, '#ff0000');
+                            m.alive = false; b.active = false; createParticles(m.x+15, m.y+15, '#ff0000');
                         }
                     }
                 }
@@ -828,6 +849,20 @@
                 }
             }
             requestAnimationFrame(loop);
+        }
+
+        // ==================== 菜单与流程控制 ====================
+        function selectDifficulty(diff) {
+            gameDifficulty = diff;
+            const badge = document.getElementById('diff-badge');
+            if(diff === 'biasa') {
+                badge.textContent = 'Biasa';
+                badge.className = 'text-xs px-2 py-0.5 rounded bg-gray-600 text-white';
+            } else {
+                badge.textContent = 'Sukar';
+                badge.className = 'text-xs px-2 py-0.5 rounded bg-red-600 text-white font-bold';
+            }
+            showIntro();
         }
 
         function showIntro() {
@@ -877,7 +912,7 @@
         function showSuccessToast() {
             const toast = document.getElementById('toast-success');
             toast.classList.remove('toast-success-anim');
-            void toast.offsetWidth; // trigger reflow
+            void toast.offsetWidth; 
             toast.classList.add('toast-success-anim');
         }
 
@@ -907,7 +942,7 @@
             
             if (isWin) {
                 title.textContent = "🏆 Sejarah Terselamat!"; title.className = "font-title text-3xl mb-4 font-bold text-green-500";
-                desc.innerHTML = `Anda berjaya melepasi 3 tahap arkib dan mengumpul kesemua fragmen dalam masa <b>${GAME_DURATION - timeLeft} saat</b> dengan <b>${currentLives} Nyawa</b> berbaki.`;
+                desc.innerHTML = `Anda berjaya melepasi 3 tahap arkib dan mengumpul kesemua fragmen dalam masa <b>${GAME_DURATION - timeLeft} saat</b> dengan <b>${currentLives} Nyawa</b> berbaki.<br><br><span class='text-sm text-gray-600'>Tahap Kesukaran: ${gameDifficulty.toUpperCase()}</span>`;
             } else {
                 title.textContent = "💀 Sejarah Dilupakan..."; title.className = "font-title text-3xl mb-4 font-bold text-red-600";
                 if (reason === "Nyawa Habis") desc.textContent = "Anda telah kehabisan nyawa! Wabak Aksara telah menewaskan anda...";
@@ -971,15 +1006,17 @@
             const val = document.getElementById('input-task-c').value.trim().toLowerCase();
             const words = val.split(/\s+/).filter(w => w.length > 0);
             const hasHubung = ['kerana', 'dan', 'untuk', 'supaya', 'agar', 'sambil', 'lalu', 'maka', 'apabila'].some(k => val.includes(k));
-            const hasAdjektif = ['aman', 'makmur', 'gembira', 'sejahtera', 'harmoni', 'selesa', 'tebal', 'rajin', 'seronok', 'hebat', 'sihat'].some(k => val.includes(k));
+            const hasAdjektif = ['aman', 'makmur', 'gembira', 'sejahtera', 'harmoni', 'selesa', 'tebal', 'rajin', 'seronok', 'hebat', 'sihat', 'mudah', 'sukar', 'kritikal', 'pesat'].some(k => val.includes(k));
             
             const baseWords = currentPuzzleC.replace('.','').toLowerCase().split(' ');
             const hasBase = baseWords.every(w => val.includes(w));
+            
+            const reqWords = gameDifficulty === 'sukar' ? 15 : 12;
 
-            if (words.length >= 12 && hasHubung && hasAdjektif && hasBase) unlockSuccess('modal-c', 'C');
+            if (words.length >= reqWords && hasHubung && hasAdjektif && hasBase) unlockSuccess('modal-c', 'C');
             else {
                 let hints = [];
-                if (words.length < 12) hints.push(`Ayat terlalu pendek (${words.length}/12 patah perkataan).`);
+                if (words.length < reqWords) hints.push(`Ayat terlalu pendek (${words.length}/${reqWords} patah perkataan).`);
                 if (!hasHubung) hints.push("Tiada Kata Hubung dikesan.");
                 if (!hasAdjektif) hints.push("Tiada Kata Adjektif dikesan.");
                 if (!hasBase) hints.push("Sila kekalkan frasa asas dalam ayat anda.");
@@ -990,7 +1027,8 @@
 
         // ==================== MCQ 系统 (Mystery Box) ====================
         function showMCQModal() {
-            currentMCQ = poolMCQ[Math.floor(Math.random() * poolMCQ.length)];
+            let pMCQ = poolMCQ[gameDifficulty];
+            currentMCQ = pMCQ[Math.floor(Math.random() * pMCQ.length)];
             document.getElementById('mcq-question').textContent = currentMCQ.q;
             
             const optionsContainer = document.getElementById('mcq-options');
